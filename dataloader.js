@@ -2,10 +2,12 @@ import { Promise } from 'es6-promise';
 
 const defaultIdFn = x => x.id;
 
-export default function Loader(createFn, {wait, mapKeyFn, limit} = {}){
-  wait = wait || 5;
-  mapKeyFn = mapKeyFn || defaultIdFn;
-  limit = limit || -1;
+export default function Loader(
+  createFn,
+  {wait = 5, mapKeyFn = defaultIdFn, limit = -1} = {}
+){
+  const queuedKeys = [];
+  queuedKeys._map = {};
 
   const action = () => {
     const args = [...queuedKeys];
@@ -21,8 +23,7 @@ export default function Loader(createFn, {wait, mapKeyFn, limit} = {}){
   };
 
   const deferredCall = debounce(action, wait);
-  const queuedKeys = [];
-  queuedKeys._map = {};
+
   return {
     load(key){
       if(!queuedKeys._map[key]){
@@ -36,7 +37,14 @@ export default function Loader(createFn, {wait, mapKeyFn, limit} = {}){
 
       return queuedKeys._map[key];
     },
-    clear(key){}
+    clear(key){
+      if(key){
+        delete queuedKeys._map[key];
+      }
+      else{
+        queuedKeys._map = {};
+      }
+    }
   }
 }
 
@@ -56,14 +64,14 @@ function getResolvablePromise(){
 }
 
 function debounce(func, wait, immediate) {
-	var timeout;
+	let timeout;
 	return function() {
-		var context = this, args = arguments;
-		var later = function() {
+		let context = this, args = arguments;
+		let later = function() {
 			timeout = null;
 			if (!immediate) func.apply(context, args);
 		};
-		var callNow = immediate && !timeout;
+		let callNow = immediate && !timeout;
 		clearTimeout(timeout);
 		timeout = setTimeout(later, wait);
 		if (callNow) func.apply(context, args);
