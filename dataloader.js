@@ -27,8 +27,8 @@ export default function Loader(
   return {
     load(key){
       if(!queuedKeys._map[key]){
-        queuedKeys.push(key);
         queuedKeys._map[key] = getResolvablePromise();
+        queuedKeys.push(key);
 
         limit && queuedKeys.length == limit
           ? action()
