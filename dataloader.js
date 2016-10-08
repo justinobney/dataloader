@@ -30,9 +30,12 @@ export default function Loader(
         queuedKeys._map[key] = getResolvablePromise();
         queuedKeys.push(key);
 
-        limit && queuedKeys.length == limit
-          ? action()
-          : deferredCall();
+        if(limit && queuedKeys.length == limit){
+          deferredCall.cancel();
+          action();
+        } else {
+          deferredCall();
+        }
       }
 
       return queuedKeys._map[key];
@@ -44,6 +47,10 @@ export default function Loader(
       else{
         queuedKeys._map = {};
       }
+    },
+    flush(){
+      deferredCall.cancel();
+      action();
     }
   }
 }
@@ -65,7 +72,11 @@ function getResolvablePromise(){
 
 function debounce(func, wait, immediate) {
 	let timeout;
-	return function() {
+
+  fn.cancel = () => clearTimeout(timeout);
+	return fn;
+
+  function fn() {
 		let context = this, args = arguments;
 		let later = function() {
 			timeout = null;
