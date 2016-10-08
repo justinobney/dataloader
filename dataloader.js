@@ -11,13 +11,17 @@ export default function Loader(
 
   const processBatch = () => {
     const args = [...queuedKeys];
-    const map = cache;
 
     queuedKeys.length = 0;
 
-    return batchCall(args).then(resp => {
-      resp.forEach(x => map[mapKeyFn(x)].resolve(x));
-    });
+    return batchCall(args).then(
+      resp => resp.forEach(x =>
+        cache[mapKeyFn(x)].resolve(x)
+      ),
+      error => args.forEach(x =>
+        cache[x].reject(new Error('batch call failed'))
+      )
+    );
   };
 
   const debouncedProcessBatch = debounce(processBatch, wait);
