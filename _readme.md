@@ -32,4 +32,4 @@ with the single object loading.
 
 * `wait`: the number `ms` to collect for batchning (default: 5)
 * `mapKeyFn`: fn to get key for caching (default: `x=>x.id`)
-* limit: max queue size before flushing batch (default: infinite)
+* `limit`: max queue size before flushing batch (default: infinite)
