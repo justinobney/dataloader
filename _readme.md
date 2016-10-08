@@ -27,3 +27,9 @@ loader.load(2)
 
 each call to `loader.load(key)` returns a promise that will resolve
 with the single object loading.
+
+## creation options
+
+* `wait`: the number `ms` to collect for batchning (default: 5)
+* `mapKeyFn`: fn to get key for caching (default: `x=>x.id`)
+* limit: max queue size before flushing batch (default: infinite)
