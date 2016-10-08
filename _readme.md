@@ -22,13 +22,12 @@ loader.load(1)
 // later in code...
 loader.load(2)
 
+// calls within ~5ms get batched
+// resulting in getData([1,2])
+
 // ex: React rendering a list of containers passing in only id's.
 // containers then call load in cwm
 // resulting in batched/cached api calls
-
-
-// calls within ~5ms get batched
-// resulting in getData([1,2])
 ```
 
 each call to `loader.load(key)` returns a promise that will resolve
