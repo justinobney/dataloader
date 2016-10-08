@@ -1,7 +1,6 @@
 # dataloader clone
 
-* inspired from facebook/dataloader.
-* intended for use in browser applications.
+* exercise in cloning facebook/dataloader without reading source
 
 ## Ex
 
