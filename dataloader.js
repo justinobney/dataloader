@@ -1,61 +1,58 @@
 import { Promise } from 'es6-promise';
 
-const defaultIdFn = x => x.id;
+const DEFAULT_MAP_ID = x => x.id;
 
 export default function Loader(
-  createFn,
-  {wait = 5, mapKeyFn = defaultIdFn, limit = -1} = {}
-){
+  batchCall,
+  {wait = 5, mapKeyFn = DEFAULT_MAP_ID, limit = -1} = {}
+) {
+  let cache = {};
   const queuedKeys = [];
-  queuedKeys._map = {};
 
-  const action = () => {
+  const processBatch = () => {
     const args = [...queuedKeys];
-    const map = queuedKeys._map;
+    const map = cache;
 
     queuedKeys.length = 0;
 
-    return createFn(args).then(resp => {
-      resp.forEach(
-        x => map[mapKeyFn(x)].resolve(x)
-      );
+    return batchCall(args).then(resp => {
+      resp.forEach(x => map[mapKeyFn(x)].resolve(x));
     });
   };
 
-  const deferredCall = debounce(action, wait);
+  const debouncedProcessBatch = debounce(processBatch, wait);
 
   return {
-    load(key){
-      if(!queuedKeys._map[key]){
-        queuedKeys._map[key] = getResolvablePromise();
+    load(key) {
+      if (!cache[key]) {
+        cache[key] = getResolvablePromise();
         queuedKeys.push(key);
 
-        if(limit && queuedKeys.length == limit){
-          deferredCall.cancel();
-          action();
+        if(limit && queuedKeys.length == limit) {
+          debouncedProcessBatch.cancel();
+          processBatch();
         } else {
-          deferredCall();
+          debouncedProcessBatch();
         }
       }
 
-      return queuedKeys._map[key];
+      return cache[key];
     },
-    clear(key){
-      if(key){
-        delete queuedKeys._map[key];
-      }
-      else{
-        queuedKeys._map = {};
+    clear(key) {
+      if (key) {
+        delete cache[key];
+      } else {
+        cache = {};
       }
     },
-    flush(){
-      deferredCall.cancel();
-      action();
+    flush() {
+      debouncedProcessBatch.cancel();
+      processBatch();
     }
   }
 }
 
-function getResolvablePromise(){
+function getResolvablePromise() {
   let resolve;
   let reject;
 
@@ -78,13 +75,20 @@ function debounce(func, wait, immediate) {
 
   function fn() {
 		let context = this, args = arguments;
-		let later = function() {
-			timeout = null;
-			if (!immediate) func.apply(context, args);
-		};
 		let callNow = immediate && !timeout;
+
 		clearTimeout(timeout);
 		timeout = setTimeout(later, wait);
-		if (callNow) func.apply(context, args);
+
+		if (callNow) {
+      func.apply(context, args);
+    }
+
+    function later() {
+      timeout = null;
+      if (!immediate) {
+        func.apply(context, args);
+      }
+    }
 	};
 };
