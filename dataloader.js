@@ -1,26 +1,26 @@
+import { Promise } from 'es6-promise';
+
 const defaultIdFn = x => x.id;
 
-export default function Loader(createFn, {wait, mapKeyFn} = {}){
+export default function Loader(createFn, {wait, mapKeyFn, limit} = {}){
   wait = wait || 5;
   mapKeyFn = mapKeyFn || defaultIdFn;
+  limit = limit || -1;
 
-  const deferredCall = debounce(() => {
+  const action = () => {
     const args = [...queuedKeys];
     const map = queuedKeys._map;
 
     queuedKeys.length = 0;
-    queuedKeys._map = {};
-
-    console.log('api call', args);
 
     return createFn(args).then(resp => {
       resp.forEach(
         x => map[mapKeyFn(x)].resolve(x)
       );
     });
+  };
 
-  }, wait);
-
+  const deferredCall = debounce(action, wait);
   const queuedKeys = [];
   queuedKeys._map = {};
   return {
@@ -28,13 +28,13 @@ export default function Loader(createFn, {wait, mapKeyFn} = {}){
       if(!queuedKeys._map[key]){
         queuedKeys.push(key);
         queuedKeys._map[key] = getResolvablePromise();
+
+        limit && queuedKeys.length == limit
+          ? action()
+          : deferredCall();
       }
 
-      const result = queuedKeys._map[key];
-
-      deferredCall();
-
-      return result;
+      return queuedKeys._map[key];
     },
     clear(key){}
   }
