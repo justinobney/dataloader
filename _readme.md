@@ -14,7 +14,7 @@ function getData(keys) {
 }
 
 // creation
-const loader = new Loader(keys => getData(keys));
+const loader = new Loader(keys => getData(keys), opts?);
 
 // use
 loader.load(1)
@@ -25,7 +25,7 @@ loader.load(2)
 // resulting in getData([1,2])
 ```
 
-each call to `loader.load(key, opts?)` returns a promise that will resolve
+each call to `loader.load(key)` returns a promise that will resolve
 with the single object loading.
 
 ## creation options
