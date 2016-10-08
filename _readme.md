@@ -22,7 +22,7 @@ loader.load(1)
 loader.load(2)
 
 // calls within ~5ms get batched
-// resulting in getData([1,2)
+// resulting in getData([1,2])
 ```
 
 each call to `loader.load(key)` returns a promise that will resolve
