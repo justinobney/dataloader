@@ -1,6 +1,6 @@
 # dataloader clone
 
-* exercise in cloning facebook/dataloader without reading source
+* exercise in cloning facebook/dataloader without reading source after hearing Lee Byron talk about it.
 
 ## Ex
 
